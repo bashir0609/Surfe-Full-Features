@@ -1,0 +1,30 @@
+/* Add some breathing room to the main content area */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    padding-left: 5rem;
+    padding-right: 5rem;
+}
+
+/* Style the primary button */
+.stButton>button {
+    border-radius: 12px;
+    border: 2px solid #0000FF; /* A blue border */
+    color: #0000FF;
+    background-color: #FFFFFF;
+}
+
+.stButton>button:hover {
+    border-color: #00008B;
+    color: #00008B;
+}
+
+/* Style headers */
+h1, h2, h3 {
+    color: #002D62; /* A darker blue for text */
+}
+
+/* Sidebar styling */
+.css-1d391kg {
+    background-color: #F0F8FF; /* Light alice blue background */
+}
