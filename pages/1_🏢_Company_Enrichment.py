@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import time
 from utils.api_client import SurfeApiClient, init_session_state, SurfeAPIError, AuthenticationError
 from utils.helpers import (
     extract_company_data,
@@ -7,7 +8,10 @@ from utils.helpers import (
     safe_convert_numeric,
     safe_convert_string,
     create_download_buttons,
-    format_linkedin_url
+    format_linkedin_url,
+    create_feature_card,
+    create_alert_box,
+    enhanced_page_header
 )
 
 st.set_page_config(page_title="Company Enrichment", layout="wide")
@@ -38,7 +42,7 @@ AVAILABLE_DATA_POINTS = {
 with st.sidebar:
     st.header("📊 Select Data Points")
     selected_data_points = {}
-    default_selections = ["Company Name", "Website", "LinkedIn URL", "Employee Count", "Company Size", "Industry"]
+    default_selections = ["Website", "LinkedIn URL", "Founded Year", "Employee Count", "Company Size", "HQ Country", "HQ Address", "Industry"]
     for name in AVAILABLE_DATA_POINTS:
         selected_data_points[name] = st.checkbox(name, value=name in default_selections)
     
@@ -127,6 +131,114 @@ if uploaded_file:
                 
                 if len(valid_domains) > 10:
                     st.write(f"... and {len(valid_domains) - 10} more domains")
+
+        # --- Single vs Bulk Enrichment Options ---
+        if domain_column:
+            valid_domains_unique = df[domain_column].dropna().unique()
+            
+            st.markdown("---")
+            st.header("⚙️ Enrichment Mode Selection")
+            
+            col_mode1, col_mode2 = st.columns(2)
+            
+            with col_mode1:
+                create_feature_card(
+                    "Single Domain Enrichment",
+                    "Process one domain at a time with detailed progress tracking and individual results",
+                    "🎯"
+                )
+            
+            with col_mode2:
+                create_feature_card(
+                    "Bulk Enrichment",
+                    "Process all domains in one batch job for faster completion and better rate limiting",
+                    "⚡"
+                )
+            
+            # Mode selection
+            enrichment_mode = st.radio(
+                "Choose Enrichment Mode:",
+                options=["🎯 Single Domain Mode", "⚡ Bulk Mode"],
+                index=1,  # Default to bulk mode
+                horizontal=True,
+                help="Single mode: Process domains one by one. Bulk mode: Process all domains together."
+            )
+            
+            # Show mode-specific information
+            if enrichment_mode == "🎯 Single Domain Mode":
+                create_alert_box(
+                    f"📊 Single Mode: Will process {len(valid_domains_unique)} domains individually with detailed progress tracking.",
+                    "info"
+                )
+                
+                with st.expander("📋 Single Mode Features"):
+                    st.markdown("""
+                    **Advantages:**
+                    - ✅ Detailed progress for each domain
+                    - ✅ Continue processing if some domains fail
+                    - ✅ See results as they complete
+                    - ✅ Better error handling per domain
+                    
+                    **Considerations:**
+                    - 🕐 Slower overall processing time
+                    - 🔄 More API calls (affects rate limits)
+                    - 📊 More detailed logging
+                    """)
+                
+                # Single mode specific settings
+                col_single1, col_single2 = st.columns(2)
+                with col_single1:
+                    delay_between = st.slider(
+                        "Delay between domains (seconds)",
+                        min_value=1.0,
+                        max_value=10.0,
+                        value=2.0,
+                        step=0.5,
+                        help="Time to wait between processing each domain"
+                    )
+                
+                with col_single2:
+                    max_retries = st.selectbox(
+                        "Max retries per domain",
+                        options=[1, 2, 3, 5],
+                        index=1,
+                        help="How many times to retry failed domains"
+                    )
+            
+            else:  # Bulk Mode
+                create_alert_box(
+                    f"⚡ Bulk Mode: Will process all {len(valid_domains_unique)} domains in a single batch job.",
+                    "success"
+                )
+                
+                with st.expander("📋 Bulk Mode Features"):
+                    st.markdown("""
+                    **Advantages:**
+                    - ⚡ Faster overall processing
+                    - 🎯 Efficient API usage
+                    - 🔄 Single job tracking
+                    - 💰 Better rate limit utilization
+                    
+                    **Considerations:**
+                    - 📊 Less granular progress
+                    - ⚠️ All-or-nothing processing
+                    - 🕐 Wait for entire batch to complete
+                    """)
+                
+                # Bulk mode specific settings
+                col_bulk1, col_bulk2 = st.columns(2)
+                with col_bulk1:
+                    if len(valid_domains_unique) > 500:
+                        st.warning(f"⚠️ Large dataset detected: {len(valid_domains_unique)} domains")
+                        st.info("Consider splitting into smaller batches if you encounter timeouts")
+                
+                with col_bulk2:
+                    batch_timeout = st.selectbox(
+                        "Batch timeout (minutes)",
+                        options=[5, 10, 15, 20, 30],
+                        index=2,  # Default to 15 minutes
+                        help="Maximum time to wait for batch completion"
+                    )
         
         # --- Raw Data Inspector for a Specific Domain ---
         with st.expander("🔬 Inspect Raw API Data for a Specific Domain"):
@@ -169,6 +281,7 @@ if uploaded_file:
                         except Exception as e:
                             st.error(f"An error occurred: {e}")
         
+        # --- Main Enrichment Button ---
         if st.button("🚀 Start Enrichment", type="primary", use_container_width=True, disabled=(selected_count==0)):
             if selected_count == 0:
                 st.warning("Please select at least one data point from the sidebar.")
@@ -184,8 +297,9 @@ if uploaded_file:
                 st.error("No valid domains found in the selected column.")
                 st.stop()
             
-            # Show what we're about to process
-            st.info(f"🚀 Starting enrichment for {len(valid_domains)} unique domains")
+            # Show processing mode confirmation
+            mode_text = "Single Domain Mode" if enrichment_mode == "🎯 Single Domain Mode" else "Bulk Mode"
+            st.info(f"🚀 Starting {mode_text} enrichment for {len(valid_domains)} unique domains")
             
             try:
                 # Create API client
@@ -203,103 +317,190 @@ if uploaded_file:
                 
                 st.info(f"📦 Prepared {len(companies_payload)} valid domains for enrichment")
                 
-                # Show payload preview
-                with st.expander("📋 Payload Preview (First 5 items)"):
-                    st.json(companies_payload[:5])
-                
                 if len(companies_payload) == 0:
                     st.error("No valid domains found after cleaning. Please check your domain format.")
                     st.stop()
 
-                with st.spinner(f"Sending {len(companies_payload)} domains for enrichment..."):
-                    enrich_job = client.start_company_enrichment(companies_payload)
+                # Process based on selected mode
+                if enrichment_mode == "🎯 Single Domain Mode":
+                    # SINGLE DOMAIN MODE PROCESSING
+                    st.subheader("🎯 Single Domain Processing")
+                    
+                    # Initialize results storage
+                    all_results = {"companies": []}
+                    successful_domains = 0
+                    failed_domains = 0
+                    
+                    # Create progress containers
+                    progress_bar = st.progress(0)
+                    status_container = st.empty()
+                    results_container = st.empty()
+                    
+                    # Process each domain individually
+                    for idx, company_data in enumerate(companies_payload):
+                        domain = company_data["domain"]
+                        progress_percentage = idx / len(companies_payload)
+                        
+                        status_container.info(f"🔄 Processing domain {idx + 1}/{len(companies_payload)}: **{domain}**")
+                        progress_bar.progress(progress_percentage)
+                        
+                        # Process single domain
+                        single_payload = [company_data]
+                        
+                        try:
+                            with st.spinner(f"Processing {domain}..."):
+                                # Start enrichment for single domain
+                                enrich_job = client.start_company_enrichment(single_payload)
+                                
+                                if enrich_job:
+                                    job_id = enrich_job.get('enrichmentID') or enrich_job.get('id')
+                                    
+                                    if job_id:
+                                        # Get results for this domain
+                                        single_result = client.get_enrichment_results(job_id)
+                                        
+                                        if single_result and single_result.get('companies'):
+                                            all_results["companies"].extend(single_result["companies"])
+                                            successful_domains += 1
+                                            status_container.success(f"✅ {domain} - Success!")
+                                        else:
+                                            failed_domains += 1
+                                            status_container.error(f"❌ {domain} - No data returned")
+                                    else:
+                                        failed_domains += 1
+                                        status_container.error(f"❌ {domain} - Job creation failed")
+                                else:
+                                    failed_domains += 1
+                                    status_container.error(f"❌ {domain} - API request failed")
+                        
+                        except Exception as domain_error:
+                            failed_domains += 1
+                            status_container.error(f"❌ {domain} - Error: {str(domain_error)}")
+                        
+                        # Show current statistics
+                        with results_container.container():
+                            col_stat1, col_stat2, col_stat3 = st.columns(3)
+                            with col_stat1:
+                                st.metric("✅ Successful", successful_domains)
+                            with col_stat2:
+                                st.metric("❌ Failed", failed_domains)
+                            with col_stat3:
+                                st.metric("📊 Remaining", len(companies_payload) - idx - 1)
+                        
+                        # Delay between requests (only if not the last domain)
+                        if idx < len(companies_payload) - 1:
+                            time.sleep(delay_between)
+                    
+                    # Final progress update
+                    progress_bar.progress(1.0)
+                    status_container.success(f"🎉 Single domain processing complete! {successful_domains} successful, {failed_domains} failed.")
+                    
+                    # Use the collected results
+                    results = all_results if all_results["companies"] else None
 
-                # Debug the API response
-                st.write("🔍 API Response Debug:")
-                if enrich_job:
-                    st.json(enrich_job)
                 else:
-                    st.error("❌ No response from API")
-                    st.stop()
-
-                # if enrich_job and enrich_job.get('id'):
-                #     job_id = enrich_job.get('id')
-                #     st.success(f"Enrichment job started successfully! (ID: {job_id})")
-
-                job_id = enrich_job.get('enrichmentID') or enrich_job.get('id')
-                if enrich_job and job_id:
-                    st.success(f"Enrichment job started successfully! (ID: {job_id})")
+                    # BULK MODE PROCESSING
+                    st.subheader("⚡ Bulk Processing")
                     
-                    # Store job ID in session state
-                    st.session_state.last_job_id = job_id
-                    st.session_state.processing_status = 'polling'
+                    # Show payload preview
+                    with st.expander("📋 Payload Preview (First 5 items)"):
+                        st.json(companies_payload[:5])
                     
-                    with st.spinner("Processing... This can take a few minutes."):
-                        results = client.get_enrichment_results(job_id)
+                    with st.spinner(f"Sending {len(companies_payload)} domains for enrichment..."):
+                        enrich_job = client.start_company_enrichment(companies_payload)
 
-                    if results:
-                        st.success("Enrichment complete! Mapping results back to your file.")
-                        
-                        # Show results preview
-                        with st.expander("📊 Raw Results Preview"):
-                            st.json(results)
-                        
-                        selected_keys = [AVAILABLE_DATA_POINTS[name]["key"] for name, sel in selected_data_points.items() if sel]
-                        company_data_map = extract_company_data(results, selected_keys)
+                    # Debug the API response
+                    st.write("🔍 API Response Debug:")
+                    if enrich_job:
+                        st.json(enrich_job)
+                    else:
+                        st.error("❌ No response from API")
+                        st.stop()
 
-                        # Prepare new columns
-                        for name, selected in selected_data_points.items():
-                            if selected:
-                                config = AVAILABLE_DATA_POINTS[name]
-                                df[f"enriched_{config['key']}"] = get_default_value(config['data_type'])
+                    job_id = enrich_job.get('enrichmentID') or enrich_job.get('id')
+                    if enrich_job and job_id:
+                        st.success(f"Enrichment job started successfully! (ID: {job_id})")
                         
-                        # Map data back to original dataframe
-                        domain_to_index_map = {domain: i for i, domain in enumerate(valid_domains)}
+                        # Store job ID in session state
+                        st.session_state.last_job_id = job_id
+                        st.session_state.processing_status = 'polling'
+                        
+                        # Use batch timeout from settings
+                        timeout_seconds = batch_timeout * 60 if 'batch_timeout' in locals() else 300
+                        
+                        with st.spinner(f"Processing... This can take up to {batch_timeout if 'batch_timeout' in locals() else 5} minutes."):
+                            results = client.get_enrichment_results(job_id, max_wait=timeout_seconds)
+                    else:
+                        st.error("Failed to start the enrichment job.")
+                        st.write("Possible issues:")
+                        st.write("1. Invalid API key")
+                        st.write("2. Invalid domain format")
+                        st.write("3. API service temporarily unavailable")
+                        st.write("4. Network connectivity issues")
+                        
+                        # Show detailed error info if available
+                        if enrich_job:
+                            st.write("Response received but no job ID found:")
+                            st.json(enrich_job)
+                        st.stop()
 
-                        for index, row in df.iterrows():
-                            domain = row[domain_column]
-                            if pd.notna(domain):
-                                clean_domain = str(domain).strip().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
-                                if clean_domain in domain_to_index_map:
-                                    result_idx = domain_to_index_map[clean_domain]
-                                    if result_idx in company_data_map:
-                                        for key, value in company_data_map[result_idx].items():
-                                            # Apply special formatting only for the 'linkedin' key
-                                            if key == 'linkedin':
-                                                df.at[index, f"enriched_{key}"] = format_linkedin_url(value)
-                                            else:
-                                                df.at[index, f"enriched_{key}"] = value
+                # Continue with results processing (same for both modes)
+                if results:
+                    st.success("Enrichment complete! Mapping results back to your file.")
+                    
+                    # Show results preview
+                    with st.expander("📊 Raw Results Preview"):
+                        st.json(results)
+                    
+                    selected_keys = [AVAILABLE_DATA_POINTS[name]["key"] for name, sel in selected_data_points.items() if sel]
+                    company_data_map = extract_company_data(results, selected_keys)
 
-                        st.header("✨ Enriched Data")
-                        st.dataframe(df)
-                        
-                        # Show enrichment statistics
-                        enriched_cols = [col for col in df.columns if col.startswith('enriched_')]
-                        if enriched_cols:
-                            st.subheader("📊 Enrichment Statistics")
-                            stats = {}
-                            for col in enriched_cols:
-                                non_empty = df[col].notna().sum()
-                                total = len(df)
-                                stats[col.replace('enriched_', '')] = f"{non_empty}/{total} ({non_empty/total*100:.1f}%)"
-                            st.json(stats)
-                        
-                        create_download_buttons(df, f"enriched_{uploaded_file.name}")
+                    # Prepare new columns
+                    for name, selected in selected_data_points.items():
+                        if selected:
+                            config = AVAILABLE_DATA_POINTS[name]
+                            df[f"enriched_{config['key']}"] = get_default_value(config['data_type'])
+                    
+                    # Map data back to original dataframe
+                    domain_to_index_map = {domain: i for i, domain in enumerate(valid_domains)}
+
+                    for index, row in df.iterrows():
+                        domain = row[domain_column]
+                        if pd.notna(domain):
+                            clean_domain = str(domain).strip().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
+                            if clean_domain in domain_to_index_map:
+                                result_idx = domain_to_index_map[clean_domain]
+                                if result_idx in company_data_map:
+                                    for key, value in company_data_map[result_idx].items():
+                                        # Apply special formatting only for the 'linkedin' key
+                                        if key == 'linkedin':
+                                            df.at[index, f"enriched_{key}"] = format_linkedin_url(value)
+                                        else:
+                                            df.at[index, f"enriched_{key}"] = value
+
+                    st.header("✨ Enriched Data")
+                    st.dataframe(df)
+                    
+                    # Show enrichment statistics
+                    enriched_cols = [col for col in df.columns if col.startswith('enriched_')]
+                    if enriched_cols:
+                        st.subheader("📊 Enrichment Statistics")
+                        stats_dict  = {}
+                        for col in enriched_cols:
+                            non_empty = df[col].notna().sum()
+                            total = len(df)
+                            percentage = f"{non_empty/total*100:.1f}%"
+                            stats_dict[col.replace('enriched_', '').title()] = percentage
+                        st.json(stats_dict)
+                    
+                    create_download_buttons(df, f"enriched_{uploaded_file.name}")
+                else:
+                    if enrichment_mode == "🎯 Single Domain Mode":
+                        st.error("Single domain processing failed to retrieve any results.")
+                        st.info("Check the individual domain results above for more details.")
                     else:
                         st.error("Failed to retrieve enrichment results.")
                         st.info(f"Job ID: {job_id} - You can check this job status later.")
-                else:
-                    st.error("Failed to start the enrichment job.")
-                    st.write("Possible issues:")
-                    st.write("1. Invalid API key")
-                    st.write("2. Invalid domain format")
-                    st.write("3. API service temporarily unavailable")
-                    st.write("4. Network connectivity issues")
-                    
-                    # Show detailed error info if available
-                    if enrich_job:
-                        st.write("Response received but no job ID found:")
-                        st.json(enrich_job)
                     
             except Exception as e:
                 st.error(f"Error during enrichment process: {str(e)}")
