@@ -1,9 +1,26 @@
 import streamlit as st
 from utils.api_client import SurfeApiClient, init_session_state
+from utils.helpers import enhanced_page_header, create_feature_card, create_stats_grid
 import os
 
 # Initialize session state first
 init_session_state()
+
+# --- Page Configuration ---
+st.set_page_config(
+    page_title="Surfe.com API Tools",
+    page_icon="⚡",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# # Load custom CSS using the new absolute path
+# load_css(_css_file)
+
+# --- Main Page UI ---
+st.title("⚡ Surfe.com API Toolkit")
+st.markdown("Welcome! Select a tool from the sidebar to get started.")
+st.info("This toolkit provides access to Surfe.com's enrichment, search, and lookalike features.")
 
 # --- THIS IS THE MODIFIED PART ---
 # Get the absolute path of the directory where this script is located
@@ -24,22 +41,6 @@ def load_css(file_name):
     else:
         st.warning(f"CSS file not found at {os.path.abspath(file_name)}")
         st.info("Please ensure 'styles.css' is in the same directory as 'main_app.py'.")
-
-# --- Page Configuration ---
-st.set_page_config(
-    page_title="Surfe.com API Tools",
-    page_icon="⚡",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Load custom CSS using the new absolute path
-load_css(_css_file)
-
-# --- Main Page UI ---
-st.title("⚡ Surfe.com API Toolkit")
-st.markdown("Welcome! Select a tool from the sidebar to get started.")
-st.info("This toolkit provides access to Surfe.com's enrichment, search, and lookalike features.")
 
 # --- Sidebar ---
 with st.sidebar:
