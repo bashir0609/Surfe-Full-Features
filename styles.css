@@ -1,30 +1,436 @@
-/* Add some breathing room to the main content area */
+/* ========================================
+   SURFE API TOOLKIT - MODERN UI STYLES
+   ======================================== */
+
+/* Import Google Fonts for better typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ========================================
+   ROOT VARIABLES - Easy theme customization
+   ======================================== */
+:root {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary-color: #10b981;
+    --accent-color: #f59e0b;
+    --danger-color: #ef4444;
+    --warning-color: #f97316;
+    
+    --background-main: #ffffff;
+    --background-secondary: #f8fafc;
+    --background-card: #ffffff;
+    --background-sidebar: #1e293b;
+    
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --text-inverse: #ffffff;
+    
+    --border-color: #e2e8f0;
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 16px;
+    
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* ========================================
+   GLOBAL STYLES
+   ======================================== */
+.main {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
 .main .block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    padding-left: 5rem;
-    padding-right: 5rem;
+    padding: 2rem 3rem;
+    max-width: 1400px;
+    background: var(--background-main);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    margin: 1rem auto;
+    border: 1px solid var(--border-color);
 }
 
-/* Style the primary button */
-.stButton>button {
-    border-radius: 12px;
-    border: 2px solid #0000FF; /* A blue border */
-    color: #0000FF;
-    background-color: #FFFFFF;
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+h1 {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 2.5rem !important;
+    margin-bottom: 1rem !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.stButton>button:hover {
-    border-color: #00008B;
-    color: #00008B;
+h2 {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    font-size: 1.875rem !important;
+    margin: 1.5rem 0 1rem 0 !important;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
 }
 
-/* Style headers */
-h1, h2, h3 {
-    color: #002D62; /* A darker blue for text */
+h3 {
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+    font-size: 1.5rem !important;
+    margin: 1rem 0 0.75rem 0 !important;
 }
 
-/* Sidebar styling */
-.css-1d391kg {
-    background-color: #F0F8FF; /* Light alice blue background */
+p, .stMarkdown {
+    color: var(--text-secondary) !important;
+    line-height: 1.6 !important;
+}
+
+/* ========================================
+   SIDEBAR STYLING
+   ======================================== */
+.css-1d391kg, .css-1lcbmhc, .css-17eq0hr {
+    background: var(--background-sidebar) !important;
+    background-image: linear-gradient(145deg, #1e293b 0%, #334155 100%) !important;
+}
+
+.sidebar .sidebar-content {
+    background: transparent !important;
+    padding: 1.5rem !important;
+}
+
+.sidebar h1, .sidebar h2, .sidebar h3 {
+    color: var(--text-inverse) !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--text-inverse) !important;
+}
+
+.sidebar .stMarkdown {
+    color: var(--text-inverse) !important;
+}
+
+.sidebar .stSelectbox label, 
+.sidebar .stTextInput label,
+.sidebar .stSlider label {
+    color: var(--text-inverse) !important;
+    font-weight: 500 !important;
+}
+
+/* ========================================
+   BUTTON STYLING
+   ======================================== */
+.stButton > button {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+    color: var(--text-inverse) !important;
+    border: none !important;
+    border-radius: var(--border-radius) !important;
+    padding: 0.75rem 2rem !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: var(--shadow-md) !important;
+    text-transform: none !important;
+    letter-spacing: 0.025em !important;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--primary-color)) !important;
+    box-shadow: var(--shadow-lg) !important;
+    transform: translateY(-2px) !important;
+}
+
+.stButton > button:active {
+    transform: translateY(0px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Primary button variant */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, var(--secondary-color), #059669) !important;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #059669, var(--secondary-color)) !important;
+}
+
+/* Secondary buttons (smaller) */
+.stButton > button[data-testid*="small"] {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+}
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
+.stTextInput > div > div > input,
+.stSelectbox > div > div > select,
+.stTextArea > div > div > textarea {
+    border: 2px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    background: var(--background-card) !important;
+}
+
+.stTextInput > div > div > input:focus,
+.stSelectbox > div > div > select:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* File uploader */
+.stFileUploader {
+    border: 2px dashed var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 2rem !important;
+    background: var(--background-secondary) !important;
+    transition: all 0.3s ease !important;
+}
+
+.stFileUploader:hover {
+    border-color: var(--primary-color) !important;
+    background: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* ========================================
+   CARDS AND CONTAINERS
+   ======================================== */
+.stExpander {
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    background: var(--background-card) !important;
+    box-shadow: var(--shadow-sm) !important;
+    margin: 1rem 0 !important;
+}
+
+.stExpander > div:first-child {
+    background: var(--background-secondary) !important;
+    border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    padding: 1rem !important;
+    font-weight: 600 !important;
+}
+
+/* Info boxes */
+.stInfo {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-left: 4px solid #3b82f6 !important;
+    border-radius: var(--border-radius-sm) !important;
+    padding: 1rem !important;
+}
+
+.stSuccess {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border-left: 4px solid var(--secondary-color) !important;
+    border-radius: var(--border-radius-sm) !important;
+    padding: 1rem !important;
+}
+
+.stWarning {
+    background: rgba(245, 158, 11, 0.1) !important;
+    border-left: 4px solid var(--accent-color) !important;
+    border-radius: var(--border-radius-sm) !important;
+    padding: 1rem !important;
+}
+
+.stError {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-left: 4px solid var(--danger-color) !important;
+    border-radius: var(--border-radius-sm) !important;
+    padding: 1rem !important;
+}
+
+/* ========================================
+   DATA DISPLAY
+   ======================================== */
+.stDataFrame {
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.stDataFrame table {
+    font-size: 0.875rem !important;
+}
+
+.stDataFrame th {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    padding: 1rem 0.75rem !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+.stDataFrame td {
+    padding: 0.75rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* JSON display */
+.stJson {
+    background: #1e293b !important;
+    border-radius: var(--border-radius) !important;
+    padding: 1rem !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* ========================================
+   PROGRESS AND LOADING
+   ======================================== */
+.stProgress > div > div {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)) !important;
+    border-radius: 10px !important;
+    height: 8px !important;
+}
+
+.stSpinner {
+    color: var(--primary-color) !important;
+}
+
+/* ========================================
+   METRICS AND STATISTICS
+   ======================================== */
+.metric-container {
+    background: var(--background-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 1.5rem !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.3s ease !important;
+}
+
+.metric-container:hover {
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 768px) {
+    .main .block-container {
+        padding: 1rem !important;
+        margin: 0.5rem !important;
+        border-radius: var(--border-radius) !important;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+    
+    h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .stButton > button {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.875rem !important;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITY IMPROVEMENTS
+   ======================================== */
+.stButton > button:focus,
+.stTextInput > div > div > input:focus,
+.stSelectbox > div > div > select:focus {
+    outline: 2px solid var(--primary-color) !important;
+    outline-offset: 2px !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --border-color: #000000;
+        --text-secondary: #000000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   CUSTOM COMPONENTS
+   ======================================== */
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+}
+
+.status-badge.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+}
+
+.status-badge.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+}
+
+/* Feature cards */
+.feature-card {
+    background: var(--background-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+    border-color: var(--primary-color);
+}
+
+/* Gradient text utility */
+.gradient-text {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+}
+
+/* ========================================
+   DARK MODE SUPPORT (Future enhancement)
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-main: #0f172a;
+        --background-secondary: #1e293b;
+        --background-card: #334155;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --border-color: #475569;
+    }
 }
